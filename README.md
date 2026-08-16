@@ -5,44 +5,45 @@ This build was verified with `npm run build` — it compiles cleanly end-to-end.
 
 ## What's implemented
 
-- **Database**: full schema with RLS (`supabase/schema.sql`, `rls.sql`, `storage.sql`, `seed.sql`)
-- **Public site**: home (fully DB-driven hero/stats/flash-deals/categories/featured/best-sellers/new-arrivals/FAQ/final CTA, with per-section enable/reorder from the admin), products list + detail, categories, deals, best-sellers, new-arrivals, cart, FAQ, about, contact, legal pages
-- **Auth**: customer register/login/logout, separate admin login with role verification, protected via `middleware.ts` + RLS (defense in depth — never just one or the other)
-- **Admin dashboard**: overview stats, Products (add/list/publish/delete), Categories (add/list/toggle/delete), Homepage Builder (edit hero/announcement copy, enable/disable/reorder every homepage section), Orders (list + update status), Website Settings
-- **Customer dashboard**: orders, downloads (via a protected signed-URL API route), wishlist, profile editing
-- **Checkout**: client-side cart (localStorage) → real `orders`/`order_items`/`downloads` rows on checkout
+- **Database**: full schema with RLS (`supabase/schema.sql`, `rls.sql`, `storage.sql`, `seed.sql`), plus a payments/invoicing migration (`supabase/migration_payments.sql`, `migration_payments_storage.sql`)
+- **Public site**: home (fully DB-driven), products, categories, deals, best-sellers, new-arrivals, cart, FAQ, legal pages
+- **Auth**: customer register/login/logout, separate role-checked admin login, protected via `middleware.ts` + RLS
+- **Manual payment checkout**: 3-step wizard (customer info → review → payment) at `/checkout`. Shows bank/JazzCash/EasyPaisa details from `payment_settings` (editable in `/admin/settings/payment`), customer uploads a payment screenshot to a **private** storage bucket, order is created as `payment_status = 'verification_pending'` — nothing is ever auto-marked as paid.
+- **Admin payment verification**: `/admin/orders/[id]` shows the screenshot (via a short-lived signed URL), lets the admin Approve or Reject. Approving is the **only** place that sets `payment_status = 'verified'`, grants `downloads` rows, and marks `order_items.download_granted = true` — this is what fixes the "Completed but Downloads = 0" bug: downloads are now created exactly once, exactly when a human actually confirms payment.
+- **Order status history**: every status/payment change is logged to `order_status_history` with who changed it and when; visible on the admin order page.
+- **Invoices**: PDF invoices generated server-side (`lib/invoice/generate.ts`, pdfkit), downloadable from `/api/invoice/[orderId]` (RLS-scoped) and attached to order-confirmation/payment-verified emails.
+- **Transactional email**: sent via **your own business email's SMTP** (not a third-party API) — see Email setup below. Covers order confirmation, payment pending, payment verified, payment rejected, order status updates, and new-order notification to the admin. All configurable/toggleable in `/admin/settings/email`, with a built-in test-send button.
+- **Admin dashboard, Products/Categories CRUD, Homepage Builder, Website Settings**: as before.
 
 ## What's scaffolded but not built out
 
-The pattern (Supabase query in a Server Component + a `"use server"` actions file for writes) is established everywhere above. These follow the exact same pattern and are mechanical to add:
-- Reviews moderation UI (table + RLS policies already exist)
-- Testimonials/Banners/Coupons/Media library admin screens (tables + RLS already exist)
-- Real payment provider integration (checkout currently marks orders "paid" immediately for demo purposes — see the comment in `app/cart/actions.ts`)
-- Wishlist "add" button (table + RLS exist; wishlist *page* is built, just needs a toggle button wired into ProductCard the same way AddToCartButton is)
-- Sitemap/robots.txt, structured data
-- Remaining homepage sections from the original spec (promo banner, social growth section, tools showcase, comparison table, affiliate banner) — `homepage_sections` and `banners` tables already model these; add a component + a branch in `app/page.tsx` the same way `ProductRail`/`StatsSection` were added
+- Automatic payment gateways (Stripe/PayPal) — `orders.payment_method` already supports `'stripe' | 'paypal'` as values, but no gateway integration is wired up. Add it as a webhook-driven route that calls the same `verifyPayment`-style logic in `app/admin/(protected)/orders/[id]/actions.ts`, triggered by the provider's webhook instead of an admin click.
+- Reviews moderation UI, testimonials/banners/coupons/media admin screens (tables + RLS already exist).
+- Order confirmation/status emails don't yet retry on failure — a failed send is logged to the server console but doesn't block the order.
 
 ## Local setup
 
-1. Create a Supabase project at supabase.com.
-2. In the Supabase SQL editor, run in this order:
+1. Create a Supabase project. In the SQL editor, run in this order:
    ```
    supabase/schema.sql
    supabase/rls.sql
    supabase/storage.sql
+   supabase/migration_payments.sql
+   supabase/migration_payments_storage.sql
    supabase/seed.sql
    ```
-3. Copy `.env.local.example` to `.env.local` and fill in your project's URL/keys (Project Settings → API).
-4. Create your first admin: sign up a user normally (via `/register` or Supabase Auth dashboard), then in the SQL editor run:
-   ```sql
-   update profiles set role = 'admin' where email = 'you@example.com';
+2. Copy `.env.local.example` → `.env.local`, fill in your Supabase keys.
+3. **Email setup** — add your business email's SMTP settings to `.env.local` (and to your host's environment variables in production):
    ```
-5. Install and run:
+   SMTP_HOST=smtp.yourmailprovider.com
+   SMTP_PORT=465
+   SMTP_SECURE=true
+   SMTP_USER=orders@yourdomain.com
+   SMTP_PASS=your-mailbox-password
    ```
-   npm install
-   npm run dev
-   ```
-6. Visit `/admin/login` with that account.
+   Hostinger-hosted email, Google Workspace, and Zoho all expose these settings under their mail account's "SMTP settings" or "other mail client" section. Without these set, the app still works — emails are just skipped (logged to the server console) rather than failing the order.
+4. `npm install && npm run dev`.
+5. Register an account, promote to admin via SQL (see below), then set your payment account details in `/admin/settings/payment` and your notification email in `/admin/settings/email` (use the test-send button there to confirm SMTP works) before taking real orders.
 
 ## Production build
 

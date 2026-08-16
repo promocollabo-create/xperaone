@@ -43,17 +43,19 @@ export default async function CustomerDashboardPage() {
       <div className="card orders-panel">
         <h2>My Orders</h2>
         <table>
-          <thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+          <thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
           <tbody>
             {(orders ?? []).map((o) => (
               <tr key={o.id}>
                 <td>{o.order_number}</td>
                 <td>{new Date(o.created_at).toLocaleDateString()}</td>
                 <td>${Number(o.total).toFixed(2)}</td>
+                <td><span className={`pill ${o.payment_status}`}>{o.payment_status}</span></td>
                 <td><span className="pill">{o.status}</span></td>
+                <td><a href={`/order/${o.id}`} className="view-link">View →</a></td>
               </tr>
             ))}
-            {(!orders || orders.length === 0) && <tr><td colSpan={4}>No orders yet — browse the shop to get started.</td></tr>}
+            {(!orders || orders.length === 0) && <tr><td colSpan={6}>No orders yet — browse the shop to get started.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -85,6 +87,10 @@ export default async function CustomerDashboardPage() {
         th { text-align: left; padding: 8px 4px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
         td { padding: 10px 4px; border-bottom: 1px solid var(--border); }
         .pill { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--bg-light); }
+        .pill.verified { background: #dcfce7; color: #166534; }
+        .pill.verification_pending { background: #fef9c3; color: #854d0e; }
+        .pill.rejected { background: #fef2f2; color: #b91c1c; }
+        .view-link { font-size: 13px; color: var(--blue); font-weight: 600; }
         .downloads-grid { display: flex; flex-direction: column; gap: 10px; }
         .download-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .btn-sm { padding: 8px 14px; font-size: 13px; }

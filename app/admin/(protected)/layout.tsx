@@ -10,6 +10,8 @@ const navItems = [
   { label: "Categories", href: "/admin/categories" },
   { label: "Homepage", href: "/admin/homepage" },
   { label: "Orders", href: "/admin/orders" },
+  { label: "Payment Settings", href: "/admin/settings/payment" },
+  { label: "Email Settings", href: "/admin/settings/email" },
   { label: "Settings", href: "/admin/settings" },
 ];
 

@@ -2,22 +2,9 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart/CartContext";
-import { checkout } from "./actions";
-import { useState } from "react";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal, clear } = useCart();
-  const [loading, setLoading] = useState(false);
-
-  async function handleCheckout() {
-    setLoading(true);
-    try {
-      await checkout(items);
-      clear();
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { items, removeItem, updateQuantity, subtotal } = useCart();
 
   if (items.length === 0) {
     return (
@@ -58,8 +45,8 @@ export default function CartPage() {
       <div className="cart-summary card">
         <div className="row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
         <div className="row total"><span>Total</span><span>${subtotal.toFixed(2)}</span></div>
-        <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleCheckout} disabled={loading}>
-          {loading ? "Processing..." : "Checkout"}
+        <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => (window.location.href = "/checkout")}>
+          Checkout
         </button>
       </div>
 
