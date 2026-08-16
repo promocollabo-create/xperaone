@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { verifyPayment, rejectPayment, updateOrderStatusWithHistory, saveAdminNotes } from "./actions";
+import { formatMoney } from "@/lib/currency";
 
 export const revalidate = 0;
 
@@ -19,6 +20,8 @@ export default async function AdminOrderDetailsPage({ params }: { params: Promis
     .select("*")
     .eq("order_id", id)
     .order("created_at", { ascending: false });
+  const { data: siteSettings } = await supabase.from("site_settings").select("currency").single();
+  const currency = siteSettings?.currency;
 
   let screenshotUrl: string | null = null;
   if (order.payment_screenshot_url) {
@@ -40,18 +43,38 @@ export default async function AdminOrderDetailsPage({ params }: { params: Promis
           <p><strong>{order.customer_name}</strong></p>
           <p>{order.customer_email}</p>
           {order.customer_phone && <p>{order.customer_phone}</p>}
-          {order.customer_country && <p>{order.customer_country}</p>}
-          {order.billing_address && <p>{order.billing_address}</p>}
         </div>
 
         <div className="card">
           <h2>Order Summary</h2>
-          <p>Subtotal: ${Number(order.subtotal).toFixed(2)}</p>
-          <p>Total: <strong>${Number(order.total).toFixed(2)}</strong></p>
-          <p>Payment method: {order.payment_method}</p>
+          <p>Subtotal: {formatMoney(Number(order.subtotal), currency)}</p>
+          <p>Total: <strong>{formatMoney(Number(order.total), currency)}</strong></p>
+          <p>Payment method: {order.payment_channel || order.payment_method}</p>
           {order.payment_reference && <p>Reference: {order.payment_reference}</p>}
           <p>Placed: {new Date(order.created_at).toLocaleString()}</p>
           {order.verified_at && <p>Verified: {new Date(order.verified_at).toLocaleString()}</p>}
+          {order.order_notes && <p>Notes: {order.order_notes}</p>}
+        </div>
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <h2>Billing Address</h2>
+          <p>{order.billing_address}</p>
+          <p>{[order.city, order.state].filter(Boolean).join(", ")} {order.postal_code}</p>
+          <p>{order.customer_country}</p>
+        </div>
+        <div className="card">
+          <h2>Shipping Address</h2>
+          {order.shipping_same_as_billing ? (
+            <p className="muted">Same as billing address</p>
+          ) : (
+            <>
+              <p>{order.shipping_address}</p>
+              <p>{[order.shipping_city, order.shipping_state].filter(Boolean).join(", ")} {order.shipping_postal_code}</p>
+              <p>{order.shipping_country}</p>
+            </>
+          )}
         </div>
       </div>
 
@@ -64,7 +87,7 @@ export default async function AdminOrderDetailsPage({ params }: { params: Promis
               <tr key={item.id}>
                 <td>{item.product_name}</td>
                 <td>{item.quantity}</td>
-                <td>${Number(item.unit_price).toFixed(2)}</td>
+                <td>{formatMoney(Number(item.unit_price), currency)}</td>
                 <td>{item.download_granted ? "✓ Granted" : "—"}</td>
               </tr>
             ))}
