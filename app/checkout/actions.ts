@@ -35,25 +35,11 @@ export async function submitCheckout(formData: FormData) {
   const customerPhone = String(formData.get("customer_phone") ?? "");
   const customerCountry = String(formData.get("customer_country") ?? "");
   const billingAddress = String(formData.get("billing_address") ?? "");
-  const city = String(formData.get("city") ?? "");
-  const state = String(formData.get("state") ?? "");
-  const postalCode = String(formData.get("postal_code") ?? "");
-  const shippingSameAsBilling = String(formData.get("shipping_same_as_billing") ?? "true") === "true";
-  const shippingAddress = shippingSameAsBilling ? billingAddress : String(formData.get("shipping_address") ?? "");
-  const shippingCity = shippingSameAsBilling ? city : String(formData.get("shipping_city") ?? "");
-  const shippingState = shippingSameAsBilling ? state : String(formData.get("shipping_state") ?? "");
-  const shippingPostalCode = shippingSameAsBilling ? postalCode : String(formData.get("shipping_postal_code") ?? "");
-  const shippingCountry = shippingSameAsBilling ? customerCountry : String(formData.get("shipping_country") ?? "");
-  const orderNotes = String(formData.get("order_notes") ?? "");
-  const paymentChannel = String(formData.get("payment_channel") ?? "") || null;
   const paymentReference = String(formData.get("payment_reference") ?? "");
   const screenshotFile = formData.get("payment_screenshot") as File | null;
 
-  if (!customerName || !customerEmail || !customerPhone || !billingAddress || !city || !customerCountry) {
-    redirect("/checkout?error=" + encodeURIComponent("Please complete all required customer and address fields"));
-  }
-  if (!shippingSameAsBilling && (!shippingAddress || !shippingCity || !shippingCountry)) {
-    redirect("/checkout?error=" + encodeURIComponent("Please complete the shipping address"));
+  if (!customerName || !customerEmail) {
+    redirect("/checkout?error=" + encodeURIComponent("Name and email are required"));
   }
 
   // NEVER trust price/name from the client — re-fetch authoritative data
@@ -104,17 +90,6 @@ export async function submitCheckout(formData: FormData) {
       customer_phone: customerPhone || null,
       customer_country: customerCountry || null,
       billing_address: billingAddress || null,
-      city: city || null,
-      state: state || null,
-      postal_code: postalCode || null,
-      shipping_same_as_billing: shippingSameAsBilling,
-      shipping_address: shippingAddress || null,
-      shipping_city: shippingCity || null,
-      shipping_state: shippingState || null,
-      shipping_postal_code: shippingPostalCode || null,
-      shipping_country: shippingCountry || null,
-      order_notes: orderNotes || null,
-      payment_channel: paymentChannel,
       subtotal,
       total,
       payment_method: "manual",
@@ -196,14 +171,7 @@ export async function submitCheckout(formData: FormData) {
       customerName,
       customerEmail,
       customerPhone,
-      billingAddress: [billingAddress, [city, state].filter(Boolean).join(", "), postalCode, customerCountry]
-        .filter(Boolean)
-        .join(", "),
-      shippingAddress: shippingSameAsBilling
-        ? null
-        : [shippingAddress, [shippingCity, shippingState].filter(Boolean).join(", "), shippingPostalCode, shippingCountry]
-            .filter(Boolean)
-            .join(", "),
+      billingAddress,
       items: lineItems.map((li) => ({ name: li.product_name, quantity: li.quantity, unitPrice: li.unit_price })),
       subtotal,
       discount: 0,

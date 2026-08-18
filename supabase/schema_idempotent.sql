@@ -1,7 +1,18 @@
 -- ============================================================================
--- XPERAONE — CORE SCHEMA
+-- XPERAONE — CORE SCHEMA (base tables only)
 -- Run this in the Supabase SQL editor (or via `supabase db push`) on a fresh
--- project. Run supabase/rls.sql immediately after. Run supabase/seed.sql last.
+-- project. Run supabase/rls_idempotent.sql and supabase/storage_idempotent.sql
+-- immediately after.
+--
+-- IMPORTANT: this file does NOT include the orders payment-workflow columns
+-- (billing_address, customer_name, payment_reference, etc.) or the
+-- order_status_history / payment_settings / email_settings tables — those
+-- live in supabase/migration_payments.sql and
+-- supabase/migration_payments_storage.sql, which MUST be run right after
+-- this file on every environment (fresh or existing). The application code
+-- requires both. Skipping them causes checkout to fail with errors like
+-- "Could not find the 'billing_address' column of 'orders' in the schema
+-- cache".
 -- ============================================================================
 
 create extension if not exists "uuid-ossp";

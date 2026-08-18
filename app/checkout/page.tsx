@@ -11,7 +11,6 @@ export default async function CheckoutPage({
   const { error } = await searchParams;
   const supabase = await createClient();
   const { data: paymentSettings } = await supabase.from("payment_settings").select("*").single();
-  const { data: siteSettings } = await supabase.from("site_settings").select("currency").single();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,7 +25,6 @@ export default async function CheckoutPage({
     <CheckoutWizard
       paymentSettings={paymentSettings}
       prefillEmail={prefillEmail}
-      currency={siteSettings?.currency}
       error={error}
     />
   );

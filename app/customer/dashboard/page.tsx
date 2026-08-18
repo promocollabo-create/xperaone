@@ -21,6 +21,8 @@ export default async function CustomerDashboardPage() {
     .select("*, products(name, thumbnail_url)");
 
   const completedCount = (orders ?? []).filter((o) => o.status === "completed").length;
+  const pendingCount = (orders ?? []).filter((o) => o.status === "pending").length;
+  const verificationCount = (orders ?? []).filter((o) => o.payment_status === "verification_pending").length;
 
   return (
     <div className="container section customer-dashboard">
@@ -36,6 +38,8 @@ export default async function CustomerDashboardPage() {
 
       <div className="dash-cards">
         <div className="card stat"><span className="value">{orders?.length ?? 0}</span><span className="label">Total Orders</span></div>
+        <div className="card stat"><span className="value">{pendingCount}</span><span className="label">Pending</span></div>
+        <div className="card stat"><span className="value">{verificationCount}</span><span className="label">Payment Verification</span></div>
         <div className="card stat"><span className="value">{completedCount}</span><span className="label">Completed</span></div>
         <div className="card stat"><span className="value">{downloads?.length ?? 0}</span><span className="label">Downloads</span></div>
       </div>
@@ -77,7 +81,8 @@ export default async function CustomerDashboardPage() {
         .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
         .dash-header h1 { font-size: 26px; }
         .dash-header p { font-size: 13px; }
-        .dash-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .dash-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 720px) { .dash-cards { grid-template-columns: repeat(2, 1fr); } }
         .stat { padding: 20px; text-align: center; }
         .stat .value { display: block; font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--navy); }
         .stat .label { font-size: 12px; color: var(--text-muted); }
