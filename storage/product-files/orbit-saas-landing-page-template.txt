@@ -1,0 +1,2 @@
+XperaOne digital product placeholder file for "orbit-saas-landing-page-template".
+This represents the purchasable digital asset delivered after payment verification.

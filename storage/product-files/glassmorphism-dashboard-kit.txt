@@ -1,0 +1,2 @@
+XperaOne digital product placeholder file for "glassmorphism-dashboard-kit".
+This represents the purchasable digital asset delivered after payment verification.

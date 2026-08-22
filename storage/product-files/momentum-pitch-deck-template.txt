@@ -1,0 +1,2 @@
+XperaOne digital product placeholder file for "momentum-pitch-deck-template".
+This represents the purchasable digital asset delivered after payment verification.

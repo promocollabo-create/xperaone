@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --xp-purple: #6d28d9;
+  --xp-indigo: #4f46e5;
+  --xp-pink: #db2777;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.xp-gradient-text {
+  background: linear-gradient(135deg, var(--xp-purple), var(--xp-indigo));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.xp-gradient-bg {
+  background: linear-gradient(135deg, var(--xp-purple), var(--xp-indigo));
+}
+
+.xp-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 15, 35, 0.04), 0 8px 24px rgba(76, 29, 149, 0.06);
+  border: 1px solid rgba(109, 40, 217, 0.06);
+}
+
+.xp-btn-primary {
+  background: linear-gradient(135deg, var(--xp-purple), var(--xp-indigo));
+  color: white;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 6px 16px rgba(109, 40, 217, 0.25);
+}
+.xp-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(109, 40, 217, 0.32);
+}
+.xp-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.xp-btn-secondary {
+  background: white;
+  color: var(--xp-purple);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  border: 1.5px solid rgba(109, 40, 217, 0.25);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.xp-btn-secondary:hover {
+  background: rgba(109, 40, 217, 0.06);
+  transform: translateY(-1px);
+}
+
+.xp-input {
+  width: 100%;
+  border: 1.5px solid #e5e2f0;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  background: white;
+}
+.xp-input:focus {
+  border-color: var(--xp-purple);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+}
+
+.xp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.xp-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .xp-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(109, 40, 217, 0.25);
+  border-radius: 999px;
+}

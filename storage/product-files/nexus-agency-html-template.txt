@@ -1,0 +1,2 @@
+XperaOne digital product placeholder file for "nexus-agency-html-template".
+This represents the purchasable digital asset delivered after payment verification.
